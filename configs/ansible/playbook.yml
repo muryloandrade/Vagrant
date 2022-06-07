@@ -1,0 +1,35 @@
+  - hosts: all
+    handlers:
+      - name: restart mysql
+        service: 
+          name: mysql
+          state: restarted
+        
+
+    tasks:
+      - name: 'Instalar Mysql Server'
+        apt:
+          update_cache: yes
+          cache_valid_time: 3600
+          name: ["mysql-server-5.7","python3-mysqldb"]
+          state: latest
+        
+      - name: 'Criar Usuario no mysql'
+        mysql_user:
+          login_user: root
+          name: phpuser
+        password: pass
+        priv: '*.*:ALL'
+        host: '%'
+        state: present
+      
+      - name: 'Copiar arquivo mysqld.cnf'
+        copy:
+            src: /vagrant/configs/mysqld.cnf
+            dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+            owner: root
+            group: root
+            mode: 0644
+        
+        notify:
+            - restart mysql
